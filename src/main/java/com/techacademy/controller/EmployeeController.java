@@ -80,23 +80,25 @@ public class EmployeeController {
         }
 
         // **エラーメッセージを管理**
-        String passwordErrorMessage = "";
+        boolean hasPasswordLengthError = password.length() < 8 || password.length() > 16;
+        boolean hasPasswordCharacterError = !password.matches("^[a-zA-Z0-9]+$");
 
-        if (!password.matches("^[a-zA-Z0-9]+$")) {
-            passwordErrorMessage += ErrorMessage.getErrorValue(ErrorKinds.HALFSIZE_ERROR) + " ";
+        if (hasPasswordLengthError) {
+            model.addAttribute("passwordLengthError", ErrorMessage.getErrorValue(ErrorKinds.RANGECHECK_ERROR));
         }
 
-        if (password.length() < 8 || password.length() > 16) {
-            passwordErrorMessage += ErrorMessage.getErrorValue(ErrorKinds.RANGECHECK_ERROR) + " ";
+        if (hasPasswordCharacterError) {
+            model.addAttribute("passwordCharacterError", ErrorMessage.getErrorValue(ErrorKinds.HALFSIZE_ERROR));
         }
 
-        // **エラーがある場合、パスワードの値をモデルに追加**
-        if (!passwordErrorMessage.isEmpty()) {
-            model.addAttribute("passwordError", passwordErrorMessage.trim());
+        // **エラーがある場合は入力画面へ戻る**
+        if (hasPasswordLengthError || hasPasswordCharacterError) {
             model.addAttribute("employee", employee);
-            model.addAttribute("passwordInput", password); // ここでパスワードをモデルにセット
+            model.addAttribute("passwordInput", password); // **入力値を保持**
             return "employees/update";
         }
+
+
 
      // 現在のログインユーザーの権限を取得
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -105,13 +107,9 @@ public class EmployeeController {
 
         // **一般権限なら 403 Forbidden を返す**
         if (!isAdmin) {
+            SecurityContextHolder.clearContext(); // セッション情報をクリア
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "権限がありません");
         }
-        // **管理者が一般権限へ変更した場合、セッションを破棄**
-
-
-
-
         employeeService.updateEmployee(employee);
         return "redirect:/employees";
     }

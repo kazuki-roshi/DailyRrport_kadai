@@ -45,7 +45,10 @@
                                         <p class="mb-1"></p>
                                         <div class="col-md-7">
                                             <input class="form-control" type="password" name="password" th:value="${passwordInput}" th:errorclass="err" id="password">
-                                            <span th:if="${passwordError}" th:text="${passwordError}" class="text-danger"></span>
+                                        <span th:if="${passwordLengthError}" th:text="${passwordLengthError}" class="text-danger"></span>
+                                        </div>
+                                        <div>
+                                        <span th:if="${passwordCharacterError}" th:text="${passwordCharacterError}" class="text-danger"></span>
                                         </div>
                                     </div>
                                     <div class="mb-3">
